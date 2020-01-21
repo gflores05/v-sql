@@ -1,18 +1,41 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div v-if="message">{{message}}</div>
+    <textarea v-model="raw"></textarea>
+    <button type="button" @click="runQuery()">Run</button>
+    <results v-bind:rows="filtered"></results>
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { Vue, Component } from 'vue-property-decorator'
 // @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import Results from '@/components/Results.vue'
 
-export default {
-  name: 'home',
+@Component({
   components: {
-    HelloWorld
+    results: Results
+  }
+})
+export default class Home extends Vue {
+  universe = [];
+  filtered = [];
+  raw = '';
+  message = '';
+
+  runQuery () {
+    try {
+      this.message = ''
+
+      const parsed = JSON.parse(this.raw)
+
+      if (typeof parsed === 'object' && parsed.length) {
+        this.universe = parsed
+      }
+      this.filtered = this.universe
+    } catch (error) {
+      this.message = 'The input should be a valid json array'
+    }
   }
 }
 </script>

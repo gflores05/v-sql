@@ -1,0 +1,27 @@
+{
+    "rows": [{
+        "id": 1,
+        "name": "Gabriel",
+        "email": "gabriel@mail.com",
+        "score": 120,
+        "date": "2020-01-21"
+    }, {
+        "id": 2,
+        "name": "Ana",
+        "email": "ana@mail.com",
+        "score": 300,
+        "date": "2020-01-20"
+    }, {
+        "id": 3,
+        "name": "Lucia",
+        "email": "lucia@mail.com",
+        "score": 260,
+        "date": "2020-01-18"
+    }, {
+        "id": 4,
+        "name": "clara",
+        "email": "clara@mail.com",
+        "score": 100,
+        "date": "2020-01-19"
+    }]
+}
