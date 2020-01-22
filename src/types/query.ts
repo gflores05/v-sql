@@ -1,3 +1,5 @@
+import * as _ from 'lodash'
+
 export enum LogicalOperator {
     DEFAULT = '',
     EQUAL = 'eq',
@@ -87,30 +89,30 @@ export class Query {
             const fieldSplit = strField.split('.')
             const fieldSplit2 = fieldSplit[1].split(' as ')
 
-            const table = fieldSplit[0];
-            const name = fieldSplit2[0];
+            const table = fieldSplit[0]
+            const name = fieldSplit2[0]
 
             if (fieldSplit2.length > 1) {
-                return new Field(table, name, fieldSplit2[1]);
+                return new Field(table, name, fieldSplit2[1])
             }
-            return new Field(table, name);
+            return new Field(table, name)
         });
-        query.tables = sqlSplit[3].split(',');
+        query.tables = sqlSplit[3].split(',')
 
-        const strConditions = sqlSplit.slice(5);
+        const strConditions = sqlSplit.slice(5)
 
         return query
     }
 
     run(tables: any): any[] {
-        const result:any[] = [];
+        let results: any[] = []
 
-        const projections: any = {};
+        const projections: any = {}
 
         for (const tableId of this.tables) {
-            const table = tables[tableId];
-            projections[tableId] = [];
-            const tFields = this.fields.filter(field => field.table === tableId);
+            const table = tables[tableId]
+            projections[tableId] = []
+            const tFields = this.fields.filter(field => field.table === tableId)
 
             for(const row of table) {
                 const projected: any = {}
@@ -118,7 +120,24 @@ export class Query {
                 projections[tableId].push(projected)
             }
         }
+        let previousResult: any[] = []
+        for (const tableId of this.tables) {
+            previousResult = results
+            results = []
+            if(previousResult.length === 0) {
+                results = projections[tableId]
+            } else {
+                for (const irow of previousResult) {
+                    for (const jrow of projections[tableId]) {
+                        results.push({
+                            ...irow,
+                            ...jrow
+                        })
+                    }
+                }
+            }
+        }
         
-        return result
+        return results
     }
 }
