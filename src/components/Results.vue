@@ -4,7 +4,7 @@
             <th v-for="column in columns" v-bind:key="column">{{column}}</th>
         </thead>
         <tbody>
-            <tr v-for="row in rows" v-bind:key="row">
+            <tr v-for="(row, index) in rows" v-bind:key="index">
                 <td v-for="column in columns" v-bind:key="column">{{row[column]}}</td>
             </tr>
         </tbody>
