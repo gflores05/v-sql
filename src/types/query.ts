@@ -2,22 +2,20 @@ import * as _ from 'lodash'
 
 export enum LogicalOperator {
   DEFAULT = '',
-  EQUAL = 'eq',
-  NOT_EQUAL = 'neq',
-  GREATER_THAN = 'gt',
-  GREATER_THAN_EQUAL = 'gte',
-  LESS_THAN = 'lt',
-  LESS_THAN_EQUAL = 'lte',
-  BETWEEN = 'btw',
-  NOT_BETWEEN = 'nbtw',
-  EMPTY = 'ety',
-  NOT_EMPTY = 'nety',
-  REGEXP = 'reg',
-  NOT_REGEXP = 'nreg'
+  EQUAL = '=',
+  NOT_EQUAL = '!=',
+  GREATER_THAN = '>',
+  GREATER_THAN_EQUAL = '>+',
+  LESS_THAN = '<',
+  LESS_THAN_EQUAL = '<=',
+  BETWEEN = 'between',
+  NOT_BETWEEN = 'not between',
+  LIKE = 'like',
+  NOT_LIKE = 'not like'
 }
 export enum LogicalConnector {
-  AND = 'AND',
-  OR = 'OR'
+  AND = 'and',
+  OR = 'or'
 }
 export abstract class Condition {
   static parse (strConditions: string[]): Condition[]{
@@ -40,6 +38,12 @@ export class ComposedCondition extends Condition{
     ) {
       super()
   }
+}
+export class BinaryTreeNode {
+  public value?: string;
+  public left?: BinaryTreeNode | string;
+  public right?: BinaryTreeNode | string;
+  public parent?: BinaryTreeNode;
 }
 export class Field {
   constructor(
@@ -101,8 +105,76 @@ export class Query {
     
     return query
   }
-  
-  run(tables: any): any[] {
+  private buildWhere(strConditions: string) {
+    const connectors = {
+      and: true,
+      or: true
+    };
+    const grouping = {
+      "(": true,
+      ")": true
+    }
+
+    const operators = {
+      ">=": true,
+      ">": true,
+      "<=": true,
+      "<": true,
+      "=": true,
+      "!=": true,
+      "between": true,
+      "not between": true,
+      "like": true,
+      "not like": true
+    }
+
+    let evaluating = strConditions
+    const expressionStack: BinaryTreeNode[] = []
+    let index = -1
+    let currentNode = new BinaryTreeNode()
+
+    while (evaluating.length > 0) {
+      if (evaluating.startsWith('(')) {
+        expressionStack.push(currentNode)
+        index++
+        evaluating = evaluating.slice(1, evaluating.length)
+      } else if (evaluating.startsWith(')')) {
+        if (index > 0) {
+          index--
+          currentNode = expressionStack[index]
+        }
+        evaluating = evaluating.slice(1, evaluating.length)
+      } else {
+        const matches = evaluating.match(/^(.*?)(?=\s+(and|or)\s+)/ig)
+
+        if (matches && matches[0] !== '') {
+          currentNode.left = matches[0]
+
+          evaluating = evaluating.slice(matches[0].length, evaluating.length)
+          const operatorMatch = evaluating.match(/\s+(and|or)\s+/ig)
+
+          if (operatorMatch && operatorMatch[0] !== '') {
+            evaluating = evaluating.slice(operatorMatch[0].length, evaluating.length)
+            currentNode.value = operatorMatch[0].trim()
+            const rightMatches = evaluating.match(/^(.*?)(?=\s+([)]|and|or)\s+)/ig)
+
+            if(rightMatches && rightMatches[0]) {
+              currentNode.right = rightMatches[0];
+              evaluating = evaluating.slice(rightMatches[0].length, evaluating.length);
+            }
+          } else {
+            throw Error(`Invalid sintax ${evaluating}`)
+          }
+        }
+      }
+    }
+  }
+  run(tables: any) {
+    const rawResults = this.crossTables(tables);
+
+    
+  }
+  private crossTables(tables: any): any[] {
     let results: any[] = []
     
     const projections: any = {}
