@@ -165,6 +165,10 @@ export class Query {
             evaluating = evaluating.slice(operatorMatch[0].length, evaluating.length)
             currentNode.value = operatorMatch[0].trim()
           }
+        } else {
+          currentNode = new BinaryTreeNode();
+          currentNode.left = evaluating;
+          expressionStack.push(currentNode);
         }
       }
     }
