@@ -131,10 +131,11 @@ export class Query {
     let evaluating = strConditions
     const expressionStack: BinaryTreeNode[] = []
     let index = -1
-    let currentNode = new BinaryTreeNode()
+    let currentNode = null;
 
     while (evaluating.length > 0) {
       if (evaluating.startsWith('(')) {
+        currentNode = new BinaryTreeNode();
         expressionStack.push(currentNode)
         index++
         evaluating = evaluating.slice(1, evaluating.length)
@@ -148,6 +149,13 @@ export class Query {
         const matches = evaluating.match(/^(.*?)(?=\s+(and|or)\s+)/ig)
 
         if (matches && matches[0] !== '') {
+          if (!currentNode) {
+            currentNode = new BinaryTreeNode();
+          } else if (currentNode.left !== '') {
+            currentNode.right = new BinaryTreeNode();
+            currentNode = currentNode.right;
+          }
+
           currentNode.left = matches[0]
 
           evaluating = evaluating.slice(matches[0].length, evaluating.length)
@@ -156,14 +164,6 @@ export class Query {
           if (operatorMatch && operatorMatch[0] !== '') {
             evaluating = evaluating.slice(operatorMatch[0].length, evaluating.length)
             currentNode.value = operatorMatch[0].trim()
-            const rightMatches = evaluating.match(/^(.*?)(?=(\s*[)]\s*|\s+(and|or)\s+))/ig)
-
-            if(rightMatches && rightMatches[0]) {
-              currentNode.right = rightMatches[0];
-              evaluating = evaluating.slice(rightMatches[0].length, evaluating.length);
-            }
-          } else {
-            throw Error(`Invalid sintax ${evaluating}`)
           }
         }
       }
