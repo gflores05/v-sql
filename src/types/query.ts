@@ -156,7 +156,7 @@ export class Query {
           if (operatorMatch && operatorMatch[0] !== '') {
             evaluating = evaluating.slice(operatorMatch[0].length, evaluating.length)
             currentNode.value = operatorMatch[0].trim()
-            const rightMatches = evaluating.match(/^(.*?)(?=\s+([)]|and|or)\s+)/ig)
+            const rightMatches = evaluating.match(/^(.*?)(?=(\s*[)]\s*|\s+(and|or)\s+))/ig)
 
             if(rightMatches && rightMatches[0]) {
               currentNode.right = rightMatches[0];
